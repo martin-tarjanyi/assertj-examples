@@ -42,6 +42,7 @@ public class AppTest
 //        assertThat(stringList).contains("fourth");
 //        assertThat(stringList).isEmpty();
 //        assertThat(integerList).isEqualTo(asList(5, 6));
+//        assertThat(integerList).containsExactlyElementsOf(asList(1, 2, 8, 7, 5, 4));
 //        assertThat(integerList).containsExactlyInAnyOrderElementsOf(asList(5, 6));
     }
 
@@ -70,29 +71,34 @@ public class AppTest
     @Test
     public void assertOptionalAssertion()
     {
-        assertThat(Optional.of(new Car("Trabant"))).isEmpty();
+        Optional<Car> optionalCar = Optional.of(new Car("Trabant"));
+
+        assertThat(optionalCar).isEmpty();
+        assertThat(optionalCar).hasValue(new Car("Ferrari"));
     }
 
     @Test
     public void assertJChainedAssertions()
     {
         List<Person> personList = asList(
-                new Person("Yach", asList(new Pet(2)), emptyList()),
+                new Person("George", asList(new Pet(2)), emptyList()),
+                new Person("George", asList(new Pet(2)), emptyList()),
                 new Person("Zach", asList(new Pet(2)), emptyList()),
                 new Person("Bob", asList(new Pet(2)), emptyList()),
                 new Person("Bill", asList(new Pet(4)), asList(new Car("Trabant")))
         );
 
+        Condition<Person> personNameStartsWithB = new Condition<>(person -> person.getName().startsWith("B"), "Person name starts with B");
+        Condition<Person> personNameStartsWithZ = new Condition<>(person -> person.getName().startsWith("Z"), "Person name starts with Z");
+        Condition<Person> personNameStartsWithG = new Condition<>(person -> person.getName().startsWith("G"), "Person name starts with G");
+
         assertThat(personList).as("List of people is as expected.")
                               .isNotEmpty()
-                              .hasSize(4)
-                              .allSatisfy(person -> assertThat(person.getCars()).as("All peoples should have a car.").size().isBetween(1, 3));
+                              .hasSize(5)
+                              .areExactly(2, personNameStartsWithB)
+                              .areExactly(1, personNameStartsWithZ)
+                              .areNot(personNameStartsWithG);
 
-        assertThat(personList).areExactly(2, new Condition<>(person -> person.getName()
-                                                                             .startsWith("B"), "Person name should start with Z"))
-                              .areExactly(1, new Condition<>(person -> person.getName()
-                                                                             .startsWith("Z"), "Person name should start with Z"))
-                              .areNot(new Condition<>(person -> person.getName().startsWith("Y"), "Person name should start with Y"));
         // TestNG alternative
 //        assertTrue(PEOPLE.stream()
 //                         .map(Person::getPets)
